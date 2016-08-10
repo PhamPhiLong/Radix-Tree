@@ -39,7 +39,7 @@ namespace phamphilong {
 
 
     private:
-        radix_tree_iterator(const radix_tree_node<Key, T>* pointed_node) : pointed_node{pointed_node} {}
+        radix_tree_iterator(radix_tree_node<Key, T>* pointed_node) : pointed_node{pointed_node} {}
         radix_tree_node<Key, T>* pointed_node;
     };
 }

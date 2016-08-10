@@ -5,9 +5,7 @@
 #ifndef PHAM_PHI_LONG_RADIX_TREE_NODE_H
 #define PHAM_PHI_LONG_RADIX_TREE_NODE_H
 
-
 #include <unordered_map>
-#include <memory>
 
 namespace phamphilong {
     template <typename Key> struct split;
@@ -15,14 +13,18 @@ namespace phamphilong {
 
     template <>
     struct split<std::string> {
-        std::string operator()(const std::string& key, std::size_t start, std::size_t len) {
+        std::string operator()(const std::string& key, std::size_t start, std::size_t len) const {
             return key.substr(start, len);
+        }
+
+        std::string operator()(const std::string& key, std::size_t start) const {
+            return key.substr(start);
         }
     };
 
     template <>
     struct radix_len<std::string> {
-         std::size_t operator()(const std::string& key) {
+         std::size_t operator()(const std::string& key) const {
             return key.length();
         }
     };
@@ -43,7 +45,7 @@ namespace phamphilong {
     public:
 
     private:
-        radix_tree_node(Key key, T value, const radix_tree_node* parent_node, const bool is_leaf, const std::size_t depth)
+        radix_tree_node(Key key, T value, radix_tree_node* parent_node, const bool is_leaf, const std::size_t depth)
                 : key{std::move(key)}, value{std::move(value)}, parent_node{parent_node}, is_leaf{is_leaf}, depth{depth} {}
 
         Key key;
@@ -51,7 +53,7 @@ namespace phamphilong {
         radix_tree_node* parent_node{nullptr};
         bool is_leaf{false};
         std::size_t depth{0};
-        std::unordered_map<Key, std::shared_ptr<radix_tree_node>> children{};
+        std::unordered_map<Key, radix_tree_node<Key, T>*> children{};
     };
 }
 

@@ -5,8 +5,8 @@
 #ifndef PHAM_PHI_LONG_RADIX_TREE_H
 #define PHAM_PHI_LONG_RADIX_TREE_H
 
-#include <memory>
 #include "radix_tree_iterator.h"
+#include <memory>
 
 namespace phamphilong {
     /**
@@ -38,52 +38,53 @@ namespace phamphilong {
                 return end();
             }
 
-            return find_node(key, 0, root_node.get());
+            return find_node(key, 0, root_node);
         }
 
         std::pair<iterator, bool> insert(const value_type& val) {
-            key_type& key = val.first;
-            mapped_type& value = val.second;
-
             if (!root_node) {
                 // add root node
-                root_node = std::make_shared<radix_tree_node<key_type, T>>(split_key(key, 0, 0), nullptr);
+                //root_node = std::make_shared<radix_tree_node<key_type, mapped_type>>(split_key(val.first, 0, 0), nullptr);
+                root_node = new node(split_key(val.first, 0, 0), val.second, nullptr, false, static_cast<std::size_t >(0));
             }
 
-            auto parent_it = find_parent_node(key, 0, root_node.get());
+            auto parent_it = find_parent_node(val.first, 0, root_node);
             if (parent_it == end()) {
-                return std::make_pair<iterator, bool>(parent_it, false);
+                return std::make_pair<iterator, bool>(std::move(parent_it), false);
             }
 
             bool found_common_branch{false};
-            key_type sub_key = split_key(key, parent_it->depth);
+            key_type sub_key = split_key(val.first, parent_it->depth);
 
             for (auto &child_node : parent_it->children) {
-                std::size_t child_key_len = get_key_len(child_node->key);
+                std::size_t child_key_len = get_key_len(child_node.first);
 
-                if (child_node.key == sub_key) {
+                if (child_node.first == sub_key) {
                 }
             }
 
             if (!found_common_branch) {
-                auto new_node_it = parent_it.pointed_node->children.insert(std::make_shared<node >(
-                        sub_key,                       // key
-                        value,                        // value
-                        parent_it.pointed_node,       // parent_node
-                        true,                         // is_leaf
-                        get_key_len(key)              // depth
+                auto new_node_it = parent_it.pointed_node->children.insert(std::make_pair<Key, node*>(
+                        key_type{sub_key},
+                        new node{
+                                sub_key,                      // key
+                                val.second,                   // value
+                                parent_it.pointed_node,       // parent_node
+                                true,                         // is_leaf
+                                get_key_len(val.first)        // depth
+                        }
                 ));
 
-                return std::make_pair<iterator, bool>(new_node_it, true);
+                //return std::make_pair<iterator, bool>(new_node_it, true);
             }
         };
 
     private:
-        std::shared_ptr<radix_tree_node<key_type, T>> root_node{nullptr};
+        node* root_node{nullptr};
         const Split split_key{};
         const Len get_key_len{};
 
-        iterator find_node(const key_type& key, const std::size_t cur_key_depth, const radix_tree_node<key_type, T>* traverse_node) {
+        iterator find_node(const key_type& key, const std::size_t cur_key_depth, radix_tree_node<key_type, mapped_type>* traverse_node) {
             if (traverse_node == nullptr) {
                 return end();
             }
@@ -94,12 +95,12 @@ namespace phamphilong {
                 }
             } else {
                 for (auto &child_node : traverse_node->children) {
-                    std::size_t child_key_len = get_key_len(child_node->key);
+                    std::size_t child_key_len = get_key_len(child_node.first);
                     key_type sub_key = split_key(key, cur_key_depth, child_key_len);
 
                     if (child_node.second->key == sub_key) {
                         std::size_t new_key_depth = cur_key_depth + child_key_len;
-                        return find_node(key, new_key_depth, child_node);
+                        return find_node(key, new_key_depth, child_node.second);
                     }
                 }
             }
@@ -107,18 +108,18 @@ namespace phamphilong {
             return end();       // cannot find
         }
 
-        iterator find_parent_node(const key_type& key, const std::size_t cur_key_depth, const radix_tree_node<Key, T>* parent_node) {
+        iterator find_parent_node(const key_type& key, const std::size_t cur_key_depth, radix_tree_node<Key, mapped_type>* parent_node) {
             if (parent_node == nullptr) {
                 return end();
             }
 
             for (auto &child_node : parent_node->children) {
-                std::size_t child_key_len = get_key_len(child_node->key);
+                std::size_t child_key_len = get_key_len(child_node.first);
                 key_type sub_key = split_key(key, cur_key_depth, child_key_len);
 
-                if (child_node.key == sub_key) {      // matched path
+                if (child_node.first == sub_key) {      // matched path
                     std::size_t new_key_depth = cur_key_depth + child_key_len;
-                    return find_parent_node(key, new_key_depth, child_node);
+                    return find_parent_node(key, new_key_depth, child_node.second);
                 }
             }
 
