@@ -55,28 +55,50 @@ namespace phamphilong {
 
             bool found_common_branch{false};
             key_type sub_key = split_key(val.first, parent_it->depth);
+            auto sub_key_len = get_key_len(sub_key);
 
             for (auto &child_node : parent_it->children) {
                 std::size_t child_key_len = get_key_len(child_node.first);
+                std::size_t i=0;
+                for (; (i < child_key_len) && (i < sub_key_len) && (child_node.first[i] == sub_key[i]); ++i) {
+                    found_common_branch = true;
+                }
 
-                if (child_node.first == sub_key) {
+                if (found_common_branch) {
+
                 }
             }
 
-            if (!found_common_branch) {
-                auto new_node_it = parent_it.pointed_node->children.insert(std::make_pair<Key, node*>(
-                        key_type{sub_key},
+            if (parent_it->is_leaf) {
+                parent_it.pointed_node->children.insert(std::make_pair<Key, node *>(
+                        key_type{},
                         new node{
-                                sub_key,                      // key
-                                val.second,                   // value
+                                key_type{},                   // key
+                                parent_it->value,             // value
                                 parent_it.pointed_node,       // parent_node
                                 true,                         // is_leaf
-                                get_key_len(val.first)        // depth
+                                parent_it->depth              // depth
                         }
                 ));
-
-                //return std::make_pair<iterator, bool>(new_node_it, true);
             }
+
+            auto new_node = parent_it.pointed_node->children.insert(std::make_pair<Key, node*>(
+                    key_type{sub_key},
+                    new node{
+                            sub_key,                      // key
+                            val.second,                   // value
+                            parent_it.pointed_node,       // parent_node
+                            true,                         // is_leaf
+                            get_key_len(val.first)        // depth
+                    }
+            ));
+
+            auto new_node_it = parent_it.pointed_node->children.find(sub_key);
+            if (new_node.second && (new_node_it != parent_it.pointed_node->children.end())) {
+                return std::make_pair<iterator, bool>(iterator(new_node_it->second), true);
+            }
+
+            return std::make_pair<iterator, bool>(end(), false);
         };
 
     private:
