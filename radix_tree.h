@@ -12,7 +12,7 @@ namespace phamphilong {
     /**
      * Read:
      *      https://en.wikipedia.org/wiki/Radix_tree
-     * for definition.
+     * for the definition.
      */
     template <typename Key, typename T, typename Split, typename Len>
     class radix_tree {
@@ -88,7 +88,7 @@ namespace phamphilong {
                      *  new_parent_node = (ab)
                      *  common_branch = (root) ____ (abc)
                      *
-                     *  Algorithm:                     *
+                     *  Algorithm:
                      *      (step 1) remove but not delete node (abc) from parent_it (root) children list
                      *      (step 2) add new parent node (ab) to parent_it (root)
                      *      (step 3) transform (abc) to (c)
@@ -141,6 +141,20 @@ namespace phamphilong {
             }
 
             if (!found_common_branch) {
+                /**
+                 * Current keys : (abc)
+                 *
+                 * (root)
+                 *   |____ (abc)
+                 *
+                 * insert key (abcef)
+                 *
+                 * (root)
+                 *   |____ (abc)
+                 *           |____ ()
+                 *           |____ (ef)
+                 *
+                 */
                 if (parent_it->is_leaf) {
                     parent_it->children.insert(std::pair<Key, node *>(
                             key_type{},

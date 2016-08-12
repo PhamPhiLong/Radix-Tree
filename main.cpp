@@ -1,5 +1,6 @@
 #include "radix_tree.h"
 #include <string>
+#include <iostream>
 
 using namespace phamphilong;
 
@@ -12,7 +13,11 @@ int main() {
     radix_tree.insert(std::make_pair<>("a", "a"));
     auto it = radix_tree.find("abz");
     if (it != radix_tree.end()) {
-        return 0;
+        std::cout << it->value << std::endl;
+    }
+
+    for (auto it = radix_tree.begin(); it != radix_tree.end(); ++it) {
+
     }
     return -1;
 }
