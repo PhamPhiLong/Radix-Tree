@@ -37,7 +37,8 @@ namespace phamphilong {
     class radix_tree_node {
         friend class radix_tree<Key, T, Split, Len>;
         friend class radix_tree_iterator<Key, T, Split, Len>;
-    public:
+
+    private:
         using mapped_type = T;
         using key_type = Key;
         using iterator = radix_tree_iterator<key_type, mapped_type, Split, Len>;
@@ -45,7 +46,6 @@ namespace phamphilong {
         using value_type = std::pair<const key_type , mapped_type>;
         using size_type = std::size_t;
 
-    private:
         radix_tree_node(value_type value, radix_tree_node* parent_node, const size_type depth)
                 : value{new value_type(value)}, parent_node{parent_node}, depth{depth} {}
 

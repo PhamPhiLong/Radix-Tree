@@ -6,6 +6,7 @@
 #define PHAM_PHI_LONG_RADIX_TREE_H
 
 #include "radix_tree_iterator.h"
+#include <vector>
 
 namespace phamphilong {
     /**
@@ -30,6 +31,7 @@ namespace phamphilong {
         iterator begin() const noexcept;
         iterator end() const noexcept;
         iterator find(const key_type& key) const noexcept;
+        std::vector<iterator> find_with_prefix(const key_type& key) const noexcept;
         std::pair<iterator, bool> insert(const value_type& value);
         size_type erase(const key_type& key);
         size_type size() const noexcept;
@@ -108,6 +110,18 @@ namespace phamphilong {
         }
 
         return find_node(key, 0, root_node);
+    }
+
+    template <typename Key, typename T, typename Split, typename Len>
+    std::vector<typename radix_tree<Key, T, Split, Len>::iterator> radix_tree<Key, T, Split, Len>::find_with_prefix(const key_type& key) const noexcept {
+        std::vector<typename radix_tree<Key, T, Split, Len>::iterator> matched_iterators{};
+
+        if (!root_node) {
+            // empty radix-tree
+            return matched_iterators;
+        }
+
+
     }
 
     template <typename Key, typename T, typename Split, typename Len>
