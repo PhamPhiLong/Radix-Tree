@@ -43,16 +43,16 @@ namespace phamphilong {
         using iterator = radix_tree_iterator<key_type, mapped_type, Split, Len>;
         using node_type = radix_tree_node<key_type , mapped_type , Split, Len>;
         using value_type = std::pair<const key_type , mapped_type>;
-
+        using size_type = std::size_t;
 
     private:
-        radix_tree_node(value_type value, radix_tree_node* parent_node, const std::size_t depth)
+        radix_tree_node(value_type value, radix_tree_node* parent_node, const size_type depth)
                 : value{new value_type(value)}, parent_node{parent_node}, depth{depth} {}
 
         const Split split_key{};
         std::unique_ptr<value_type> value{nullptr};
         radix_tree_node* parent_node{nullptr};
-        std::size_t depth{0};
+        size_type depth{0};
         std::unordered_map<key_type, radix_tree_node<key_type, T, Split, Len>*> children{};
 
         bool is_leaf() {
@@ -70,6 +70,12 @@ namespace phamphilong {
             }
 
             return split_key(value->first, parent_node->depth, depth);
+        }
+
+        ~radix_tree_node() {
+            for (auto& child : children) {
+                delete child.second;
+            }
         }
     };
 }
