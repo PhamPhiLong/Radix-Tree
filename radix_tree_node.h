@@ -6,6 +6,7 @@
 #define PHAM_PHI_LONG_RADIX_TREE_NODE_H
 
 #include <unordered_map>
+#include <memory>
 
 namespace phamphilong {
     template <typename Key> struct split;
@@ -29,31 +30,47 @@ namespace phamphilong {
         }
     };
 
-    template <
-            typename Key,
-            typename T,
-            typename Split = split<Key>,
-            typename Len = radix_len<Key>
-    > class radix_tree;
+    template <typename Key, typename T, typename Split, typename Len> class radix_tree;
+    template <typename Key, typename T, typename Split, typename Len> class radix_tree_iterator;
 
-    template <typename Key, typename T> class radix_tree_iterator;
-
-    template <typename Key, typename T>
+    template <typename Key, typename T, typename Split, typename Len>
     class radix_tree_node {
-        friend class radix_tree<Key, T>;
-        friend class radix_tree_iterator<Key, T>;
+        friend class radix_tree<Key, T, Split, Len>;
+        friend class radix_tree_iterator<Key, T, Split, Len>;
     public:
+        using mapped_type = T;
+        using key_type = Key;
+        using iterator = radix_tree_iterator<key_type, mapped_type, Split, Len>;
+        using node_type = radix_tree_node<key_type , mapped_type , Split, Len>;
+        using value_type = std::pair<const key_type , mapped_type>;
+
 
     private:
-        radix_tree_node(Key key, T value, radix_tree_node* parent_node, const bool is_leaf, const std::size_t depth)
-                : key{std::move(key)}, value{std::move(value)}, parent_node{parent_node}, is_leaf{is_leaf}, depth{depth} {}
+        radix_tree_node(value_type value, radix_tree_node* parent_node, const std::size_t depth)
+                : value{new value_type(value)}, parent_node{parent_node}, depth{depth} {}
 
-        Key key;
-        T value;
+        const Split split_key{};
+        std::unique_ptr<value_type> value{nullptr};
         radix_tree_node* parent_node{nullptr};
-        bool is_leaf{false};
         std::size_t depth{0};
-        std::unordered_map<Key, radix_tree_node<Key, T>*> children{};
+        std::unordered_map<key_type, radix_tree_node<key_type, T, Split, Len>*> children{};
+
+        bool is_leaf() {
+            return children.empty();
+        }
+
+        bool is_root() {
+            return nullptr == parent_node;
+        }
+
+        key_type get_search_key() {
+            // return the key of this node in parent's children map
+            if (is_root()) {
+                return split_key(value->first, 0, depth);
+            }
+
+            return split_key(value->first, parent_node->depth, depth);
+        }
     };
 }
 

@@ -8,20 +8,26 @@
 #include "radix_tree_node.h"
 
 namespace phamphilong {
-    template <typename Key, typename T>
+    template <typename Key, typename T, typename Split, typename Len>
     class radix_tree_iterator {
-        friend class radix_tree<Key, T>;
+        friend class radix_tree<Key, T, Split, Len>;
 
     public:
-        radix_tree_node<Key, T>& operator*  () const {
-            return pointed_node;
+        using mapped_type = T;
+        using key_type = Key;
+        using iterator = radix_tree_iterator<key_type, mapped_type, Split, Len>;
+        using node_type = radix_tree_node<key_type , mapped_type , Split, Len>;
+        using value_type = std::pair<const key_type , mapped_type>;
+
+        value_type& operator* () const {
+            return *pointed_node->value;
         }
 
-        radix_tree_node<Key, T>* operator-> () const {
-            return pointed_node;
+        value_type* operator-> () const {
+            return pointed_node->value.get();
         }
 
-        const radix_tree_iterator<Key, T>& operator++ () {
+        const iterator& operator++ () {
             // find first children node
             auto child_it = pointed_node->children.begin();
             if (child_it != pointed_node->children.end()) {
@@ -30,7 +36,7 @@ namespace phamphilong {
                 // cannot find any children, then find sibling
                 auto parent_node = pointed_node->parent_node;
                 while (parent_node != nullptr) {
-                    auto it = pointed_node->parent_node->children.find(pointed_node->key);
+                    auto it = pointed_node->parent_node->children.find(pointed_node->get_search_key());
                     if (it != pointed_node->parent_node->children.end()) {
                         ++it;
                         if (it != pointed_node->parent_node->children.end()) {
@@ -49,31 +55,35 @@ namespace phamphilong {
                 }
             }
 
-            if (pointed_node->is_leaf) {
+            if (pointed_node->parent_node == nullptr) {
+                // already reached final node
+                this->pointed_node = nullptr;
+                return *this;
+            } else if (pointed_node->is_leaf()) {
                 return *this;
             } else {
                 return this->operator++();
             }
         }
 
-        radix_tree_iterator<Key, T> operator++ (int) {
+        iterator operator++ (int) {
             auto temp = *this;
             ++*this;
             return temp;
         }
 
-        bool operator!= (const radix_tree_iterator<Key, T> &lhs) const {
+        bool operator!= (const iterator& lhs) const {
             return pointed_node != lhs.pointed_node;
         }
 
-        bool operator== (const radix_tree_iterator<Key, T> &lhs) const {
+        bool operator== (const iterator& lhs) const {
             return pointed_node == lhs.pointed_node;
         }
 
 
     private:
-        radix_tree_iterator(radix_tree_node<Key, T>* pointed_node) : pointed_node{pointed_node} {}
-        radix_tree_node<Key, T>* pointed_node;
+        radix_tree_iterator(node_type * pointed_node) : pointed_node{pointed_node} {}
+        node_type * pointed_node;
     };
 }
 
