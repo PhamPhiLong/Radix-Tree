@@ -271,7 +271,7 @@ namespace phamphilong {
     }
 
     template <typename Key, typename T, typename Split, typename Len>
-    typename radix_tree<Key, T, Split, Len>::size_type radix_tree<Key, T, Split, Len>::size() const noexcept {
+    inline typename radix_tree<Key, T, Split, Len>::size_type radix_tree<Key, T, Split, Len>::size() const noexcept {
         return tree_size;
     };
 
@@ -321,7 +321,7 @@ namespace phamphilong {
     }
 
     template <typename Key, typename T, typename Split, typename Len>
-    void radix_tree<Key, T, Split, Len>::clear() noexcept {
+    inline void radix_tree<Key, T, Split, Len>::clear() noexcept {
         delete root_node;
         root_node = nullptr;
         tree_size = 0;

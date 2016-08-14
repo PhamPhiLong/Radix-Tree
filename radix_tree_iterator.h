@@ -32,12 +32,12 @@ namespace phamphilong {
     };
 
     template <typename Key, typename T, typename Split, typename Len>
-    typename radix_tree_iterator<Key, T, Split, Len>::value_type& radix_tree_iterator<Key, T, Split, Len>::operator* () const {
+    inline typename radix_tree_iterator<Key, T, Split, Len>::value_type& radix_tree_iterator<Key, T, Split, Len>::operator* () const {
         return *pointed_node->value;
     }
 
     template <typename Key, typename T, typename Split, typename Len>
-    typename radix_tree_iterator<Key, T, Split, Len>::value_type* radix_tree_iterator<Key, T, Split, Len>::operator-> () const {
+    inline typename radix_tree_iterator<Key, T, Split, Len>::value_type* radix_tree_iterator<Key, T, Split, Len>::operator-> () const {
         return pointed_node->value.get();
     }
 
@@ -89,12 +89,12 @@ namespace phamphilong {
     }
 
     template <typename Key, typename T, typename Split, typename Len>
-    bool radix_tree_iterator<Key, T, Split, Len>::operator!= (const iterator& lhs) const {
+    inline bool radix_tree_iterator<Key, T, Split, Len>::operator!= (const iterator& lhs) const {
         return pointed_node != lhs.pointed_node;
     }
 
     template <typename Key, typename T, typename Split, typename Len>
-    bool radix_tree_iterator<Key, T, Split, Len>::operator== (const iterator& lhs) const {
+    inline bool radix_tree_iterator<Key, T, Split, Len>::operator== (const iterator& lhs) const {
         return pointed_node == lhs.pointed_node;
     }
 }
